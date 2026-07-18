@@ -4,12 +4,10 @@ const db = require('../config/db');
 const obtenerProductos = async (req, res) => {
   try {
     const [productos] = await db.query(`
-      SELECT p.id, p.nombre, p.descripcion, p.imagen_url, 
-             p.costo_puntos, p.stock, c.nombre AS categoria
-      FROM productos p
-      JOIN categorias_producto c ON p.categoria_id = c.id
-      WHERE p.activo = true
-      ORDER BY c.nombre, p.nombre
+      SELECT id, nombre, descripcion, imagen_url, costo_puntos, stock
+      FROM productos
+      WHERE activo = true
+      ORDER BY nombre
     `);
     res.json(productos);
   } catch (error) {
@@ -22,11 +20,9 @@ const obtenerProductoPorId = async (req, res) => {
   const { id } = req.params;
   try {
     const [productos] = await db.query(`
-      SELECT p.id, p.nombre, p.descripcion, p.imagen_url,
-             p.costo_puntos, p.stock, c.nombre AS categoria
-      FROM productos p
-      JOIN categorias_producto c ON p.categoria_id = c.id
-      WHERE p.id = ? AND p.activo = true
+      SELECT id, nombre, descripcion, imagen_url, costo_puntos, stock
+      FROM productos
+      WHERE id = ? AND activo = true
     `, [id]);
 
     if (productos.length === 0) {
@@ -42,10 +38,11 @@ const obtenerProductoPorId = async (req, res) => {
 const crearProducto = async (req, res) => {
   const { categoria_id, nombre, descripcion, imagen_url, costo_puntos, stock } = req.body;
   try {
+    const { nombre, descripcion, imagen_url, costo_puntos, stock } = req.body;
     const [resultado] = await db.query(`
-      INSERT INTO productos (categoria_id, nombre, descripcion, imagen_url, costo_puntos, stock)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [categoria_id, nombre, descripcion, imagen_url, costo_puntos, stock]);
+      INSERT INTO productos (nombre, descripcion, imagen_url, costo_puntos, stock)
+      VALUES (?, ?, ?, ?, ?)
+    `, [nombre, descripcion, imagen_url, costo_puntos, stock]);
 
     res.status(201).json({ mensaje: 'Producto creado correctamente', id: resultado.insertId });
   } catch (error) {

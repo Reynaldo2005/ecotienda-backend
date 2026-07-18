@@ -155,7 +155,10 @@ const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
 
-  // Estados válidos y su orden
+  console.log('=== CAMBIAR ESTADO ===');
+  console.log('ID:', id);
+  console.log('Estado recibido:', JSON.stringify(estado));
+
   const estadosValidos = ['pendiente', 'empaquetado', 'en_camino', 'entregado'];
   const estadosOrden = { pendiente: 0, empaquetado: 1, en_camino: 2, entregado: 3 };
 
@@ -164,7 +167,6 @@ const cambiarEstado = async (req, res) => {
   }
 
   try {
-    // Obtener estado actual
     const [canje] = await db.query(
       'SELECT id, estado FROM canjes WHERE id = ?', [id]
     );
@@ -175,21 +177,18 @@ const cambiarEstado = async (req, res) => {
 
     const estadoActual = canje[0].estado;
 
-    // Validar transición válida (no ir hacia atrás ni al mismo estado)
     if (estadosOrden[estado] <= estadosOrden[estadoActual]) {
       return res.status(400).json({ 
-        error: `No puedes pasar de "${estadoActual}" a "${estado}". Solo puedes avanzar de forma lineal.` 
+        error: `No puedes pasar de "${estadoActual}" a "${estado}".` 
       });
     }
 
-    // Mapeo de columnas de fecha según estado
     const columnaFecha = {
       empaquetado: 'fecha_empaquetado',
       en_camino: 'fecha_envio',
       entregado: 'fecha_entrega'
     }[estado];
 
-    // Construir query dinámica
     let query = `UPDATE canjes SET estado = ?`;
     const params = [estado];
 
@@ -202,7 +201,6 @@ const cambiarEstado = async (req, res) => {
 
     await db.query(query, params);
 
-    // Mensajes bonitos según estado
     const mensajes = {
       empaquetado: '📦 Pedido en proceso de empaquetado',
       en_camino: '🚚 Pedido en camino a su destino',
@@ -213,8 +211,7 @@ const cambiarEstado = async (req, res) => {
       mensaje: mensajes[estado],
       canje_id: id,
       estado_anterior: estadoActual,
-      estado_actual: estado,
-      progreso: { pendiente: 0, empaquetado: 33, en_camino: 66, entregado: 100 }[estado]
+      estado_actual: estado
     });
 
   } catch (error) {

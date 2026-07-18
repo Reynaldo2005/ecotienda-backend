@@ -40,6 +40,6 @@ router.post('/upload-imagen', verificarToken, verificarAdmin, upload.single('ima
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
-  const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+  const imageUrl = `https://ecotienda-backend.onrender.com/uploads/${req.file.filename}`;
   res.json({ mensaje: 'Imagen subida correctamente', url: imageUrl });
 });

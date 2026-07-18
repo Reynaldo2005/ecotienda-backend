@@ -63,7 +63,7 @@ router.post('/manual', verificarToken, verificarAdmin, async (req, res) => {
     const [config] = await db.query(
       'SELECT valor FROM configuracion WHERE clave = "umbral_kilos_oferta"'
     );
-    const umbral = parseFloat(config[0].valor);
+    const umbral = config.length > 0 ? parseFloat(config[0].valor) : 100;
     const ofertaEspecial = parseFloat(saldo[0].kilos_totales) >= umbral;
 
     res.status(201).json({
